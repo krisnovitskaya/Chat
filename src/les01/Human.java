@@ -1,6 +1,6 @@
 package les01;
 
-public class Human implements Team{
+public class Human implements Participant {
     private final String name; //имя человека
     private float maxJumpHeight;
     private int maxRunDistance;

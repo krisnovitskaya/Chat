@@ -1,6 +1,6 @@
 package les01;
 
-public class Cat implements Team{
+public class Cat implements Participant {
     private final String name; //имя кота
     private float maxJumpHeight;
     private int maxRunDistance;

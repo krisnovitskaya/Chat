@@ -12,7 +12,7 @@ public class TeamTesting {
         //Hurdle hurdle1 = new Wall("Стена");
         //hurdle1.tryIt(member1);
 
-        Team[] dreamTeam = new Team[6];             //создание массива икроков
+        Participant[] dreamTeam = new Participant[6];             //создание массива икроков
         dreamTeam[0] = new Robot("Adios", 2.0f,200);
         dreamTeam[1] = new Cat("Murka", 3.0f, 700);
         dreamTeam[2] = new Cat("Murzik", 1.0f, 800);

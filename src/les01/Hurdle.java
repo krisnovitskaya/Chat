@@ -1,5 +1,5 @@
 package les01;
 
 public interface Hurdle {
-    void tryIt(Team member);
+    void tryIt(Participant member);
 }

@@ -15,7 +15,7 @@ public class RunningTrack implements Hurdle {
     }
 
     @Override
-    public void tryIt(Team member) {
+    public void tryIt(Participant member) {
         if(member.isAbleToTry()){
             member.run();
             if(member.getMaxRunDistance() >= this.getDistance()){

@@ -1,6 +1,6 @@
 package les01;
 
-public interface Team {
+public interface Participant {
     void run();
     void jump();
 

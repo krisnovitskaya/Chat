@@ -1,6 +1,6 @@
 package les01;
 
-public class Robot implements Team {
+public class Robot implements Participant {
 
     private final String name; //имя робота
     private float maxJumpHeight;

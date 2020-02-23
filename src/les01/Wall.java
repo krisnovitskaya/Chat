@@ -12,7 +12,7 @@ public class Wall implements Hurdle {
     }
 
     @Override
-    public void tryIt(Team member) {
+    public void tryIt(Participant member) {
         if(member.isAbleToTry()){
             member.jump();
             if(member.getMaxJumpHeight() >= this.getHeight()){

@@ -12,23 +12,34 @@ public class ArrayExceptionTest {
         String[][] array = initArray(4);
         randomDamageArray(array);
 
+        String[][] array2 = initArr();
+
         try{
             arrayConvertAndAmount(array);
+            arrayConvertAndAmount(array2);
         }catch (MySizeArrayException e){
             System.out.println(e.getMessage());
-            System.out.println("Двумерный строковый массив имеет размер [" + array.length +"][" + array.length + "].");
+            //System.out.println("Двумерный строковый массив имеет размер [" + array.length +"][" + array.length + "].");
         }catch (MyArrayDataException e){
             System.out.println("В ячейке [" + e.getI() +"][" + e.getJ() + "] неверные данные");
         }
     }
 
     public static void arrayConvertAndAmount(String[][] arr) throws MyArrayDataException, MySizeArrayException{
+
         if(arr.length != 4){
             throw new MySizeArrayException("Размер массива не соответствует 4х4");
         }
+
+        for (int i = 0; i < arr.length; i++) {
+            if(arr[i].length != 4){
+                throw new MySizeArrayException("Размер массива не соответствует 4х4");
+            }
+        }
+
         int sum = 0;
         for(int i = 0; i < arr.length; i++) {
-            for (int j = 0; j < arr.length; j++) {
+            for (int j = 0; j < arr[i].length; j++) {
                 try {
                     sum += Integer.parseInt(arr[i][j]);
                 }catch (NumberFormatException e){
@@ -68,5 +79,18 @@ public class ArrayExceptionTest {
             int j = (int)(Math.random() * arr.length);
             arr[i][j] += "s";
          }
+    }
+
+
+    // для теста
+    public static String[][] initArr(){
+        String[][] array = {
+                {"1", "5" , "4" , "8"},
+                {"3", "5", "9", "4", "5", "2"},
+                {"5", "3"},
+                {"4", "0", "8", "8", "-10"}
+        };
+
+        return array;
     }
 }

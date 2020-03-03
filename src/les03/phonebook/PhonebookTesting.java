@@ -9,13 +9,16 @@ public class PhonebookTesting {
     public static void main(String[] args) {
 
         Phonebook phonebook = new Phonebook();
-        phonebook.add(12345, "Orlov");
-        phonebook.add(14578, "Kotov");
-        phonebook.add(14584, "Metlova");
-        phonebook.add(14785, "Arbuzov");
-        phonebook.add(14577, "Orlov");
-        phonebook.add(36987, "Kotov");
-        phonebook.add(68974, "Orlov");
+        phonebook.add("Orlov", 15425);
+
+
+        phonebook.add("Orlov", 12345);
+        phonebook.add("Kotov", 14578);
+        phonebook.add("Metlova", 14578);
+        phonebook.add( "Arbuzov", 14578);
+        phonebook.add("Orlov",14578);
+        phonebook.add( "Kotov", 36987);
+        phonebook.add( "Orlov",68974);
 
 
         phonebook.get("Orlov");

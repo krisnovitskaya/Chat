@@ -24,15 +24,25 @@ public class PartOne {
     public static Map<String, Integer> countUniqueString(String[] arr, Set<String> stringSet){
         Map<String, Integer> map = new HashMap<>();
 
-        for (String s : stringSet) {
-            int count = 0;
-            for (int i = 0; i < arr.length ; i++) {
-                if(s.equals(arr[i])){
-                    count++;
-                }
-            }
-            map.put(s, count);
+//        for (String s : stringSet) {
+//            int count = 0;
+//            for (int i = 0; i < arr.length ; i++) {
+//                if(s.equals(arr[i])){
+//                    count++;
+//                }
+//            }
+//            map.put(s, count);
+//        }
+       // for (String word: arr) {
+       //     map.merge(word, 1, Integer::sum);
+       // }
+        for (String word: arr){
+            Integer count = map.getOrDefault(word, 0);
+            map.put(word, count + 1);
         }
+
+
+
         return map;
     }
 

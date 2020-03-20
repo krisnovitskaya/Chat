@@ -16,6 +16,7 @@ public class ClientHandler {
     private DataInputStream in;
     private DataOutputStream out;
 
+
     private String nick;
 
     public ClientHandler(NetworkServer networkServer, Socket clientSocket) {
@@ -68,7 +69,19 @@ public class ClientHandler {
             if("/end".equals(message)){  //команда выхода от пользователя
                 return;
             }
-            networkServer.broadcastMessage(nick + " : " + message);
+            if(message.startsWith("/w")){
+                sendPrivateMessage(message);
+            } else {
+                networkServer.broadcastMessage(nick + " : " + message);
+           }
+        }
+    }
+
+    private void sendPrivateMessage(String message) {
+        try {
+            networkServer.sendPrivateMessage(message);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -97,5 +110,9 @@ public class ClientHandler {
 
     public void sendMessage(String message) throws IOException {
         out.writeUTF(message);
+    }
+
+    public String getUserName() {
+        return nick;
     }
 }

@@ -68,9 +68,19 @@ public class ClientChat extends JFrame {
         if (message.isEmpty()) {
             return;
         }
+        if (message.startsWith("/w ")) {
+            message = transformToPrivateMessage(message);
+        }
         controller.sendMessage(message);
         enterText.setText(null);
     }
+
+    private String transformToPrivateMessage(String message) {
+        StringBuffer privateMessage = new StringBuffer(message);
+        privateMessage.insert(3, (controller.getUserName() + " "));  // /w sender recipient message
+        return privateMessage.toString();
+    }
+
 
     public void addMessage(String message) {
         SwingUtilities.invokeLater(() -> {

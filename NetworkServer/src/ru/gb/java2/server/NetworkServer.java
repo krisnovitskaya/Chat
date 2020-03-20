@@ -53,6 +53,20 @@ public class NetworkServer {
     public synchronized void broadcastMessage(String message) throws IOException{
         for(ClientHandler client : clients ){
             client.sendMessage(message);
+
+        }
+    }
+
+    public synchronized void sendPrivateMessage(String message) throws IOException{
+        String[] messageParts = message.split(" ", 4);
+        // /w sender recipient message
+        for(ClientHandler client : clients ){
+            if((client.getUserName()).equals(messageParts[1]) || (client.getUserName()).equals(messageParts[2])){
+
+                client.sendMessage(String.format("%s приватно %s: %s", messageParts[1], messageParts[2], messageParts[3]));
+            }
+
+
         }
     }
 

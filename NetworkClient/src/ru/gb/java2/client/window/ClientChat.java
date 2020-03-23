@@ -22,6 +22,7 @@ public class ClientChat extends JFrame {
     private JList chatList;
     private DefaultListModel<String> chatListField;
     private JButton buttonClearChat;
+    private JLabel currentContact;
 
     private ClientController controller;
 
@@ -68,18 +69,24 @@ public class ClientChat extends JFrame {
         if (message.isEmpty()) {
             return;
         }
-        if (message.startsWith("/w ")) {
-            message = transformToPrivateMessage(message);
+//        if (message.startsWith("/w ")) {
+//            message = transformToPrivateMessage(message);
+//        }
+        if (contactsList.getSelectedIndex() < 1) {
+            controller.sendMessage(message); //всем
+
+        } else {
+            controller.sendMessage(String.format("/w %s %s %s", controller.getUserName(), contactsList.getSelectedValue(), message));
         }
-        controller.sendMessage(message);
+
         enterText.setText(null);
     }
 
-    private String transformToPrivateMessage(String message) {
-        StringBuffer privateMessage = new StringBuffer(message);
-        privateMessage.insert(3, (controller.getUserName() + " "));  // /w sender recipient message
-        return privateMessage.toString();
-    }
+//    private String transformToPrivateMessage(String message) {
+//        StringBuffer privateMessage = new StringBuffer(message);
+//        privateMessage.insert(3, (controller.getUserName() + " "));  // /w sender recipient message
+//        return privateMessage.toString();
+//    }
 
 
     public void addMessage(String message) {
@@ -91,10 +98,19 @@ public class ClientChat extends JFrame {
     private void addContacts() {
         //контакты чтобы было
         DefaultListModel<String> contactsListField = new DefaultListModel<>();
+        contactsListField.addElement("to All");
         contactsListField.addElement("nick1");
         contactsListField.addElement("nick2");
         contactsListField.addElement("nick3");
         contactsList.setModel(contactsListField);
+
+        contactsList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                String selectedContact = contactsList.getSelectedValue();
+                currentContact.setText(selectedContact);
+            }
+        });
     }
 
 
@@ -142,6 +158,9 @@ public class ClientChat extends JFrame {
         buttonClearChat.setLabel("ClearChat");
         buttonClearChat.setText("ClearChat");
         contentPane.add(buttonClearChat, new com.intellij.uiDesigner.core.GridConstraints(2, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        currentContact = new JLabel();
+        currentContact.setText("");
+        contentPane.add(currentContact, new com.intellij.uiDesigner.core.GridConstraints(3, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

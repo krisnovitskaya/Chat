@@ -12,7 +12,7 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler {
-
+    private final long TIMEOUT = 120000; // in millis
     private final NetworkServer networkServer;
     private final Socket clientSocket;
 
@@ -52,6 +52,19 @@ public class ClientHandler {
             }).start();
 
             //сюда попробовать new Thread 120 секунд авторизации
+            new Thread(() -> {
+                try {
+                    Thread.currentThread().sleep(TIMEOUT);
+                    if(nick == null){
+                        Command authErrorCommand = Command.authErrorCommand("Превышено время ожидания");
+                        sendMessage(authErrorCommand);
+                        closeConnection();
+                        System.out.println("Соединение разорвано по таймауту");
+                    }
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
 
         } catch (IOException e) {
             e.printStackTrace();

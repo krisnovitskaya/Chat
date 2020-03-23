@@ -3,9 +3,11 @@ package ru.gb.java2.client.controller;
 import ru.gb.java2.client.model.NetworkService;
 import ru.gb.java2.client.window.AuthDialog;
 import ru.gb.java2.client.window.ClientChat;
+import ru.gb.java2.clientserver.Command;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.List;
 
 public class ClientController {
 
@@ -28,10 +30,13 @@ public class ClientController {
     }
 
     private void runAuthProcess() {
-
-        networkService.setSuccessfulAuthEvent(nick -> {
-            setUserName(nick);
-            openChat();
+        networkService.setSuccessfulAuthEvent(new AuthEvent() {
+            @Override
+            public void authIsSuccessful(String nick) {
+                ClientController.this.setUserName(nick);
+                clientChat.setTitle(nick);
+                ClientController.this.openChat();
+            }
         });
         authDialog.setVisible(true);
     }
@@ -52,24 +57,48 @@ public class ClientController {
     }
 
     private void connectToServer() throws IOException {
-        networkService.connect();
+        networkService.connect(this);
     }
 
+
+
     public void sendAuthMessage(String login, String pass) throws IOException {
-        networkService.sendAuthMessage(login, pass);
+        networkService.sendCommand(Command.authCommand(login, pass));
     }
-    public void sendMessage(String message){
+
+    public void sendMessageToAll(String message){
         try {
-            networkService.sendMessage(message);
+            networkService.sendCommand(Command.broadcastMessage(message));
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "Ошибка отправки сообщения");
+            clientChat.showError("Ошибка отправки сообщения");
             e.printStackTrace();
         }
     }
 
+    public void sendPrivateMessage(String username, String message) {
+        try {
+            networkService.sendCommand(Command.privateMessageCommand(username, message));
+        } catch (IOException e) {
+            showErrorMessage(e.getMessage());
+        }
+    }
     public  void shutdown(){
         networkService.close();
     }
 
 
+    public void showErrorMessage(String errorMessage) {
+        if (clientChat.isActive()){
+            clientChat.showError(errorMessage);
+        } else if(authDialog.isActive()){
+            authDialog.showError(errorMessage);
+        }
+        System.err.println(errorMessage);
+    }
+
+    public void updateUsersList(List<String> users) {
+        users.remove(nick);
+        users.add(0, "to All");
+        clientChat.updateUsers(users);
+    }
 }

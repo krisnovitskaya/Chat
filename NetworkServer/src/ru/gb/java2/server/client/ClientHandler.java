@@ -1,11 +1,14 @@
 package ru.gb.java2.server.client;
 
+import ru.gb.java2.clientserver.Command;
+import ru.gb.java2.clientserver.CommandType;
+import ru.gb.java2.clientserver.command.AuthCommand;
+import ru.gb.java2.clientserver.command.BroadcastMessageCommand;
+import ru.gb.java2.clientserver.command.PrivateMessageCommand;
 import ru.gb.java2.server.NetworkServer;
 
 import javax.swing.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler {
@@ -13,8 +16,8 @@ public class ClientHandler {
     private final NetworkServer networkServer;
     private final Socket clientSocket;
 
-    private DataInputStream in;
-    private DataOutputStream out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
 
 
     private String nick;
@@ -31,8 +34,8 @@ public class ClientHandler {
 
     private void doHandle(Socket clientSocket) {
         try {
-            in = new DataInputStream(clientSocket.getInputStream());
-            out = new DataOutputStream(clientSocket.getOutputStream());
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
+            in = new ObjectInputStream(clientSocket.getInputStream());
 
             //запуск авторизации с последующим чтением ввода в отдельном потоке
             new Thread(() -> {
@@ -47,16 +50,17 @@ public class ClientHandler {
                 }
 
             }).start();
+
+            //сюда попробовать new Thread 120 секунд авторизации
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void closeConnection() {
-
         try{
             networkServer.unsubscribe(this); //отписаться
-            networkServer.broadcastMessage(nick + " вышел из чата.");
             clientSocket.close(); //закрыть сокет и ридеры ввода/вывода
         } catch(IOException e){
             e.printStackTrace();
@@ -65,51 +69,89 @@ public class ClientHandler {
 
     private void readingMessages() throws IOException {
         while (true){
-            String message = in.readUTF();
-            if("/end".equals(message)){  //команда выхода от пользователя
-                return;
+            Command command = readCommand();
+            if(command == null){
+                continue;
             }
-            if(message.startsWith("/w")){
-                sendPrivateMessage(message);
-            } else {
-                networkServer.broadcastMessage(nick + " : " + message);
-           }
+            switch (command.getType()){
+                case END:
+                    System.out.println("received END command");
+                    return;
+                case PRIVATE_MESSAGE:{
+                    PrivateMessageCommand commandData = (PrivateMessageCommand) command.getData();
+                    String receiver = commandData.getReceiver();
+                    String message = commandData.getMessage();
+                    networkServer.sendMessage(receiver, Command.messageCommand(nick, message)); //получатель отправитель сообщение
+                    break;
+                }
+                case BROADCAST_MESSAGE:{
+                    BroadcastMessageCommand commandData = (BroadcastMessageCommand) command.getData();
+                    String message = commandData.getMessage();
+                    networkServer.broadcastMessage(Command.messageCommand(nick, message), this);
+                    break;
+                }
+                default:
+                    System.err.println("unknown type of command : " + command.getType());
+            }
         }
     }
 
-    private void sendPrivateMessage(String message) {
+    private Command readCommand() throws IOException {
         try {
-            networkServer.sendPrivateMessage(message);
-        } catch (IOException e) {
+            return (Command) in.readObject();
+        } catch (ClassNotFoundException e) {
+            String errorMessage = "Unknown type of object from client";
+            System.err.println(errorMessage);
             e.printStackTrace();
+            sendMessage(Command.errorCommand(errorMessage));
+            return null;
         }
     }
 
     private void authentication() throws IOException {
         while(true) {
-            String message = in.readUTF();
-            String[] messageParts = message.split(" ", 3);
-
-            String login = messageParts[1];
-            String password = messageParts[2];
-            String userName = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
-
-            if (userName == null) {
-                System.out.println("Отсутствует учетная запись с таким логином и паролем");
-                //sendMessage("Отсутствует учетная запись с таким логином и паролем");
-
+            Command command = readCommand();
+            if(command == null){
+                continue;
+            }
+            if(command.getType() == CommandType.AUTH){
+                boolean successfulAuth = processAuthCommand(command);
+                if(successfulAuth){
+                    return;
+                }
             } else {
-                nick = userName;
-                sendMessage("/auth "+ nick);
-                networkServer.broadcastMessage(nick + " зашел в чат.");
-                networkServer.subscribe(this);
-                break;
+                System.err.println("Unknown type of command for authprocess: " + command.getType());
             }
         }
     }
 
-    public void sendMessage(String message) throws IOException {
-        out.writeUTF(message);
+    private boolean processAuthCommand(Command command) throws IOException {
+        AuthCommand commandData = (AuthCommand) command.getData();
+        String login = commandData.getLogin();
+        String password = commandData.getPassword();
+        String username = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
+        if(username == null){
+            Command authErrorCommand = Command.authErrorCommand("Отсутствует учетная запись с таким логином/паролем");
+            sendMessage(authErrorCommand);
+            return false;
+        } else if (networkServer.isNickBusy(username)){
+            Command authErrorCommand = Command.authErrorCommand("Данный пользователь уже авторизован.");
+            sendMessage(authErrorCommand);
+            return false;
+        } else {
+            nick = username;
+            String message = nick + " зашел в чат!";
+            networkServer.broadcastMessage(Command.messageCommand(null, message), this);
+            commandData.setUsername(nick);
+            sendMessage(command); //авторизация
+            networkServer.subscribe(this);
+            return true;
+        }
+
+    }
+
+    public void sendMessage(Command command) throws IOException {
+        out.writeObject(command);
     }
 
     public String getUserName() {

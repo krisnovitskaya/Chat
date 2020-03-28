@@ -1,5 +1,6 @@
 package ru.gb.java2.server;
 
+import ru.gb.java2.clientserver.Command;
 import ru.gb.java2.server.auth.AuthService;
 import ru.gb.java2.server.auth.BaseAuthService;
 import ru.gb.java2.server.client.ClientHandler;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class NetworkServer {
@@ -36,6 +38,8 @@ public class NetworkServer {
         } catch (IOException e) {
             System.out.println("Ошибка при работе сервера.");
             e.printStackTrace();
+        } finally {
+            authService.stop();
         }
     }
 
@@ -50,33 +54,53 @@ public class NetworkServer {
     }
 
     //разослать сообщение всем клиентам
-    public synchronized void broadcastMessage(String message) throws IOException{
+    public synchronized void broadcastMessage(Command message, ClientHandler owner) throws IOException{
         for(ClientHandler client : clients ){
-            client.sendMessage(message);
-
-        }
-    }
-
-    public synchronized void sendPrivateMessage(String message) throws IOException{
-        String[] messageParts = message.split(" ", 4);
-        // /w sender recipient message
-        for(ClientHandler client : clients ){
-            if((client.getUserName()).equals(messageParts[1]) || (client.getUserName()).equals(messageParts[2])){
-
-                client.sendMessage(String.format("%s приватно %s: %s", messageParts[1], messageParts[2], messageParts[3]));
+            if(client != owner) {
+                client.sendMessage(message);
             }
-
-
         }
     }
+
 
     //для подключения после авторизации
-    public synchronized void subscribe(ClientHandler clientHandler){
+    public synchronized void subscribe(ClientHandler clientHandler) throws IOException {
         clients.add(clientHandler);
+        List<String> users = getAllUserNames();
+        broadcastMessage(Command.updateUsersListCommand(users), null);
     }
 
     //для исключения после выхода или разрыва соединения
-    public synchronized void unsubscribe(ClientHandler clientHandler){
+    public synchronized void unsubscribe(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
+        List<String> users = getAllUserNames();
+        broadcastMessage(Command.updateUsersListCommand(users), null);
+    }
+
+    private List<String> getAllUserNames() {
+        List<String> usernames = new LinkedList<>();
+        for (ClientHandler clientHandler : clients) {
+            usernames.add(clientHandler.getUserName());
+        }
+        return usernames;
+    }
+
+    //приват
+    public synchronized  void sendMessage(String receiver, Command commandMessage) throws IOException {
+        for (ClientHandler client : clients) {
+            if(client.getUserName().equals(receiver)){
+                client.sendMessage(commandMessage);
+                break;
+            }
+        }
+    }
+
+    public boolean isNickBusy(String username){
+        for (ClientHandler client : clients) {
+            if(client.getUserName().equals(username)){
+                return true;
+            }
+        }
+        return false;
     }
 }

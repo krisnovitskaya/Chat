@@ -45,10 +45,13 @@ public class AuthDialog extends JFrame {
         String pass = new String(passwordField.getPassword()).trim();
         try {
             controller.sendAuthMessage(login, pass);
-
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Ошибка при аутентификации");
         }
+    }
+
+    public void showError(String errorMessage) {
+        JOptionPane.showMessageDialog(this, errorMessage);
     }
 
     {
@@ -96,4 +99,6 @@ public class AuthDialog extends JFrame {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
+
+
 }

@@ -4,7 +4,7 @@ package ru.gb.java3.server;
 
 public class ServerApp {
 
-    private static final int DEFAULT_PORT = 4040;
+    private static final int DEFAULT_PORT = 4050;
     public static void main(String[] args) {
         int port = getServerPort(args);
         new NetworkServer(port).go();

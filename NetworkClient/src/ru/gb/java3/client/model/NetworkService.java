@@ -3,10 +3,7 @@ package ru.gb.java3.client.model;
 import ru.gb.java3.client.controller.AuthEvent;
 import ru.gb.java3.client.controller.ClientController;
 import ru.gb.java3.clientserver.Command;
-import ru.gb.java3.clientserver.command.AuthCommand;
-import ru.gb.java3.clientserver.command.ErrorCommand;
-import ru.gb.java3.clientserver.command.MessageCommand;
-import ru.gb.java3.clientserver.command.UpdateUsersListCommand;
+import ru.gb.java3.clientserver.command.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -75,6 +72,13 @@ public class NetworkService {
                             UpdateUsersListCommand commandData = (UpdateUsersListCommand) command.getData();
                             List<String> users = commandData.getUsers();
                             controller.updateUsersList(users);
+                            break;
+                        }
+                        case CHANGE_NICK:{
+                            ChangeNickCommand commandData = (ChangeNickCommand) command.getData();
+                            nick = commandData.getUsername();
+                            controller.setNewNick(nick);
+                            controller.changeNickDialogClose();
                             break;
                         }
                         default:

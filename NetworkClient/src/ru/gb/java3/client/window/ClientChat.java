@@ -20,6 +20,7 @@ public class ClientChat extends JFrame {
     private DefaultListModel<String> chatListField;
     private JButton buttonClearChat;
     private JLabel currentContact;
+    private JButton buttonChangenick;
 
     private ClientController controller;
 
@@ -59,6 +60,7 @@ public class ClientChat extends JFrame {
             String selectedContact = contactsList.getSelectedValue();
             currentContact.setText(selectedContact);
         });
+        buttonChangenick.addActionListener(e -> controller.openChangeNickDialog());
     }
 
     private void sendMessage() {

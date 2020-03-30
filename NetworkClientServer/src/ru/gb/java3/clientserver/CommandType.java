@@ -8,5 +8,6 @@ public enum CommandType {
     MESSAGE,
     UPDATE_USER_LIST,
     ERROR,
-    END
+    END,
+    CHANGE_NICK
 }

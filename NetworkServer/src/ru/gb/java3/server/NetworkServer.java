@@ -77,11 +77,12 @@ public class NetworkServer {
         broadcastMessage(Command.updateUsersListCommand(users), null);
     }
 
-    private List<String> getAllUserNames() {
+    public List<String> getAllUserNames() {
         List<String> usernames = new LinkedList<>();
         for (ClientHandler clientHandler : clients) {
             usernames.add(clientHandler.getUserName());
         }
+        System.out.println(usernames);
         return usernames;
     }
 

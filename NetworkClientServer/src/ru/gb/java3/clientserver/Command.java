@@ -18,6 +18,13 @@ public class Command implements Serializable {
         return data;
     }
 
+
+    public static Command changeNickCommand(String login, String pass, String newNick){
+        Command command = new Command();
+        command.type = CommandType.CHANGE_NICK;
+        command.data = new ChangeNickCommand(login, pass, newNick);
+        return command;
+    }
     public static Command authCommand(String login, String password){
         Command command = new Command();
         command.type = CommandType.AUTH;

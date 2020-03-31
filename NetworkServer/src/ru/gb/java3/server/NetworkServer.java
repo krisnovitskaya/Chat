@@ -82,7 +82,6 @@ public class NetworkServer {
         for (ClientHandler clientHandler : clients) {
             usernames.add(clientHandler.getUserName());
         }
-        System.out.println(usernames);
         return usernames;
     }
 

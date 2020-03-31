@@ -98,9 +98,7 @@ public class NetworkService {
         this.successfulAuthEvent = successfulAuthEvent;
     }
 
-//    public void sendAuthMessage(String login, String password) throws IOException{
-//        out.writeUTF(String.format("/auth %s %s", login, password));
-//    }
+
 
     public void sendCommand(Command command) throws IOException{
         out.writeObject(command);

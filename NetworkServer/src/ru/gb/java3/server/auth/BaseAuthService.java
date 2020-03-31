@@ -8,35 +8,6 @@ import java.util.List;
 
 public class BaseAuthService extends Config implements AuthService {
 
-//    private static class UserData {
-//        private String login;
-//        private String password;
-//        private String userName;
-//
-//        public UserData(String login, String password, String userName) {
-//            this.login = login;
-//            this.password = password;
-//            this.userName = userName;
-//        }
-//    }
-//
-//    private  List<UserData> userData;
-//
-//    public BaseAuthService() {
-//        userData = new ArrayList<>();
-//        userData.add(new UserData("login1", "pass1", "nick1"));
-//        userData.add(new UserData("login2", "pass2", "nick2"));
-//        userData.add(new UserData("login3", "pass3", "nick3"));
-//    }
-//
-//    @Override
-//    public String getUserNameByLoginAndPass(String login, String pass) {
-//        for (UserData data : userData) {
-//            if(data.login.equals(login) && data.password.equals(pass)) return data.userName;
-//        }
-//        return null;
-//    }
-
     private static Connection connection;
     private static Statement stmt;
     private static PreparedStatement pstmt;
@@ -44,7 +15,7 @@ public class BaseAuthService extends Config implements AuthService {
 
     public static void connect() throws SQLException {
         try {
-            String connectionString = "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=false";
+            String connectionString = String.format("jdbc:mysql://%s:%s/%s?useSSL=false", dbHost, dbPort, dbName);
             Class.forName("com.mysql.jdbc.Driver");
             connection = DriverManager.getConnection(connectionString, dbUser, dbPass);
         } catch (ClassNotFoundException e) {
@@ -54,8 +25,7 @@ public class BaseAuthService extends Config implements AuthService {
 
     public static void disconnect() {
         try {
-            stmt.close();
-            pstmt.close();
+
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -91,7 +61,7 @@ public class BaseAuthService extends Config implements AuthService {
             pstmt.setString(2, login);
             pstmt.setString(3, pass);
             int x = pstmt.executeUpdate();
-            System.out.println(x);
+
             if (x == 1){
 
                 return true;

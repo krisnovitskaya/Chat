@@ -4,11 +4,13 @@ import ru.gb.java3.clientserver.Command;
 import ru.gb.java3.clientserver.CommandType;
 import ru.gb.java3.clientserver.command.AuthCommand;
 import ru.gb.java3.clientserver.command.BroadcastMessageCommand;
+import ru.gb.java3.clientserver.command.ChangeNickCommand;
 import ru.gb.java3.clientserver.command.PrivateMessageCommand;
 import ru.gb.java3.server.NetworkServer;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler {
     private final long TIMEOUT = 120000; // in millis
@@ -100,6 +102,25 @@ public class ClientHandler {
                     BroadcastMessageCommand commandData = (BroadcastMessageCommand) command.getData();
                     String message = commandData.getMessage();
                     networkServer.broadcastMessage(Command.messageCommand(nick, message), this);
+                    break;
+                }
+                case CHANGE_NICK:{
+                    ChangeNickCommand commandData = (ChangeNickCommand) command.getData();
+                    String login = commandData.getLogin();
+                    String pass = commandData.getPassword();
+                    String newNick = commandData.getUsername();
+                    boolean changeSuccessful = networkServer.getAuthService().changeCurrentNickname(login, pass, newNick);
+                    if(changeSuccessful){
+                        String message = nick + " сменил ник на " + newNick;
+                        nick = newNick;
+                        networkServer.broadcastMessage(Command.messageCommand(null, message), this);
+                        sendMessage(command); //смена ника подтверждение
+                        List<String> users = networkServer.getAllUserNames();
+                        networkServer.broadcastMessage(Command.updateUsersListCommand(users), this);
+                    } else {
+                        Command errorCommand = Command.errorCommand("Не удалось сменить Nick. Пользователь с таким ником существует или login/pass введены неправильно");
+                        sendMessage(errorCommand);
+                    }
                     break;
                 }
                 default:

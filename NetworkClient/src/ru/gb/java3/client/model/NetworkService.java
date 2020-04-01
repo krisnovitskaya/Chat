@@ -3,10 +3,7 @@ package ru.gb.java3.client.model;
 import ru.gb.java3.client.controller.AuthEvent;
 import ru.gb.java3.client.controller.ClientController;
 import ru.gb.java3.clientserver.Command;
-import ru.gb.java3.clientserver.command.AuthCommand;
-import ru.gb.java3.clientserver.command.ErrorCommand;
-import ru.gb.java3.clientserver.command.MessageCommand;
-import ru.gb.java3.clientserver.command.UpdateUsersListCommand;
+import ru.gb.java3.clientserver.command.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -77,6 +74,13 @@ public class NetworkService {
                             controller.updateUsersList(users);
                             break;
                         }
+                        case CHANGE_NICK:{
+                            ChangeNickCommand commandData = (ChangeNickCommand) command.getData();
+                            nick = commandData.getUsername();
+                            controller.setNewNick(nick);
+                            controller.changeNickDialogClose();
+                            break;
+                        }
                         default:
                             System.err.println("unknown type of command: " + command.getType());
                     }
@@ -94,9 +98,7 @@ public class NetworkService {
         this.successfulAuthEvent = successfulAuthEvent;
     }
 
-//    public void sendAuthMessage(String login, String password) throws IOException{
-//        out.writeUTF(String.format("/auth %s %s", login, password));
-//    }
+
 
     public void sendCommand(Command command) throws IOException{
         out.writeObject(command);

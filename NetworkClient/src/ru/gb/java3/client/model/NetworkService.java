@@ -23,6 +23,8 @@ public class NetworkService {
     private AuthEvent successfulAuthEvent;
     private String nick;
 
+    private int id;
+
 
     public NetworkService(String serverIP, int port){
         this.serverIP = serverIP;
@@ -47,7 +49,8 @@ public class NetworkService {
                         case AUTH:{
                             AuthCommand commandData = (AuthCommand) command.getData();
                             nick = commandData.getUsername();
-                            successfulAuthEvent.authIsSuccessful(nick);
+                            id = commandData.getID();
+                            successfulAuthEvent.authIsSuccessful(nick, id);
                             break;
                         }
                         case MESSAGE:{

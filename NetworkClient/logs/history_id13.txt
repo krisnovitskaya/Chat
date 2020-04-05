@@ -31,3 +31,9 @@ nick3: приватно: czcz
 Я приватно nick22: s
 Я приватно nick22: s
 Я приватно nick22: d
+nick22 зашел в чат!
+nick22: fdsf
+nick22: executor
+Я приватно nick22: executor
+nick3 зашел в чат!
+nick3: uhah

@@ -1,5 +1,6 @@
 package ru.gb.java3.server.client;
 
+import javafx.util.Pair;
 import ru.gb.java3.clientserver.Command;
 import ru.gb.java3.clientserver.CommandType;
 import ru.gb.java3.clientserver.command.AuthCommand;
@@ -162,20 +163,22 @@ public class ClientHandler {
         AuthCommand commandData = (AuthCommand) command.getData();
         String login = commandData.getLogin();
         String password = commandData.getPassword();
-        String username = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
+        //String username = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
+        Pair<Integer, String> username = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
         if(username == null){
             Command authErrorCommand = Command.authErrorCommand("Отсутствует учетная запись с таким логином/паролем");
             sendMessage(authErrorCommand);
             return false;
-        } else if (networkServer.isNickBusy(username)){
+        } else if (networkServer.isNickBusy(username.getValue())){
             Command authErrorCommand = Command.authErrorCommand("Данный пользователь уже авторизован.");
             sendMessage(authErrorCommand);
             return false;
         } else {
-            nick = username;
+            nick = username.getValue();
             String message = nick + " зашел в чат!";
             networkServer.broadcastMessage(Command.messageCommand(null, message), this);
             commandData.setUsername(nick);
+            commandData.setID(username.getKey());
             sendMessage(command); //авторизация
             networkServer.subscribe(this);
             return true;

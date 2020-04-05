@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClientChat extends JFrame {
@@ -23,24 +24,27 @@ public class ClientChat extends JFrame {
     private JButton buttonChangenick;
 
     private ClientController controller;
+    private List<String> history;
 
 
     public ClientChat(ClientController controller) {
 
         this.controller = controller;
         //поле чата
-        chatListField = new DefaultListModel<>();
-        chatList.setModel(chatListField);
-
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        //chatListField = new DefaultListModel<>();
+        //chatList.setModel(chatListField);
+        this.history = new ArrayList<>();
         setSize(640, 480);
         setLocationRelativeTo(null);
         setContentPane(contentPane);
-
+        //setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                controller.saveHistory(history);
                 controller.shutdown();
+                System.exit(0);
+
             }
         });
         addListeners();
@@ -92,12 +96,19 @@ public class ClientChat extends JFrame {
 
 
     public void addMessage(String message) {
+        history.add(message);
+
         SwingUtilities.invokeLater(() -> {
             chatListField.addElement(message);
         });
     }
 
-
+    public void setChatListField(DefaultListModel<String> dlm) {
+        SwingUtilities.invokeLater(() -> {
+            chatListField = controller.loadChatHistoryByID();
+            chatList.setModel(chatListField);
+        });
+    }
 
     public void showError(String errorMessage) {
         JOptionPane.showMessageDialog(this, errorMessage);

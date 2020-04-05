@@ -1,10 +1,12 @@
 package ru.gb.java3.server.auth;
 
 import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
+import javafx.util.Pair;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BaseAuthService extends Config implements AuthService {
 
@@ -33,9 +35,9 @@ public class BaseAuthService extends Config implements AuthService {
     }
 
     @Override
-    public String getUserNameByLoginAndPass(String login, String pass) {
+    public Pair<Integer, String> getUserNameByLoginAndPass(String login, String pass) {
         //SELECT nickname from users where login = 'login1' and password = 'pass1';
-        String prep = "SELECT nickname from users where login = ? and password = ?";
+        String prep = "SELECT idusers, nickname from users where login = ? and password = ?";
         try {
             pstmt = connection.prepareStatement(prep);
             pstmt.setString(1, login);
@@ -43,7 +45,10 @@ public class BaseAuthService extends Config implements AuthService {
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()){
-                return rs.getString("nickname");
+                int id = rs.getInt("idusers");
+                String nick = rs.getString("nickname");
+                Pair<Integer, String> pair = new Pair<>(id, nick);
+                return pair;
             }
         } catch (SQLException e) {
             e.printStackTrace();

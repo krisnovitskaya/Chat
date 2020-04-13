@@ -1,0 +1,14 @@
+апр 13, 2020 3:22:42 PM ru.gb.java3.server.client.ClientHandler processAuthCommand
+INFO: ololosh зашел в чат!
+апр 13, 2020 3:22:42 PM ru.gb.java3.server.client.ClientHandler authentication
+INFO: Успешная авторизация
+апр 13, 2020 3:23:02 PM ru.gb.java3.server.client.ClientHandler processAuthCommand
+INFO: name444 зашел в чат!
+апр 13, 2020 3:23:02 PM ru.gb.java3.server.client.ClientHandler authentication
+INFO: Успешная авторизация
+апр 13, 2020 3:23:27 PM ru.gb.java3.server.client.ClientHandler readingMessages
+INFO: name444 сменил ник на nickFOUR
+апр 13, 2020 3:23:40 PM ru.gb.java3.server.client.ClientHandler$1 run
+SEVERE: Соединение с клиентом ololosh завершено.
+апр 13, 2020 3:23:49 PM ru.gb.java3.server.client.ClientHandler$1 run
+SEVERE: Соединение с клиентом nickFOUR завершено.

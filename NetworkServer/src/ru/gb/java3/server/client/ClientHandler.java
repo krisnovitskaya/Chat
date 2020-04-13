@@ -16,8 +16,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.*;
 
 public class ClientHandler {
+    private static final Logger logger = Logger.getLogger(ClientHandler.class.getName());
     private final long TIMEOUT = 120000; // in millis
     private final NetworkServer networkServer;
     private final Socket clientSocket;
@@ -28,11 +30,14 @@ public class ClientHandler {
 
     private String nick;
 
-
+    static {
+        setLogger();
+    }
 
     public ClientHandler(NetworkServer networkServer, Socket clientSocket) {
         this.networkServer = networkServer;
         this.clientSocket = clientSocket;
+
     }
 
 
@@ -55,6 +60,7 @@ public class ClientHandler {
                         readingMessages();
                     } catch (IOException e) {
                         System.out.println("Соединение с клиентом " + nick + " завершено.");
+                        logger.log(Level.SEVERE,"Соединение с клиентом " + nick + " завершено.");
                     } finally {
                         closeConnection();
                     }
@@ -73,6 +79,7 @@ public class ClientHandler {
                             sendMessage(authErrorCommand);
                             closeConnection();
                             System.out.println("Соединение разорвано по таймауту");
+                            logger.log(Level.INFO,"Соединение разорвано по таймауту");
                         }
                     } catch (InterruptedException | IOException e) {
                         e.printStackTrace();
@@ -125,19 +132,24 @@ public class ClientHandler {
                     boolean changeSuccessful = networkServer.getAuthService().changeCurrentNickname(login, pass, newNick);
                     if(changeSuccessful){
                         String message = nick + " сменил ник на " + newNick;
+                        logger.log(Level.INFO,message);
                         nick = newNick;
                         networkServer.broadcastMessage(Command.messageCommand(null, message), this);
+
                         sendMessage(command); //смена ника подтверждение
                         List<String> users = networkServer.getAllUserNames();
                         networkServer.broadcastMessage(Command.updateUsersListCommand(users), this);
                     } else {
                         Command errorCommand = Command.errorCommand("Не удалось сменить Nick. Пользователь с таким ником существует или login/pass введены неправильно");
+                        logger.log(Level.WARNING,"Пользователь " + nick + "Не удалось сменить Nick. Пользователь с таким ником существует или login/pass введены неправильно");
                         sendMessage(errorCommand);
                     }
                     break;
                 }
                 default:
                     System.err.println("unknown type of command : " + command.getType());
+                    logger.log(Level.SEVERE,"unknown type of command : " + command.getType());
+
             }
         }
     }
@@ -163,6 +175,7 @@ public class ClientHandler {
             if(command.getType() == CommandType.AUTH){
                 boolean successfulAuth = processAuthCommand(command);
                 if(successfulAuth){
+                    logger.log(Level.INFO,"Успешная авторизация");
                     return;
                 }
             } else {
@@ -179,16 +192,19 @@ public class ClientHandler {
         Pair<Integer, String> username = networkServer.getAuthService().getUserNameByLoginAndPass(login, password);
         if(username == null){
             Command authErrorCommand = Command.authErrorCommand("Отсутствует учетная запись с таким логином/паролем");
+            logger.log(Level.INFO,"Отсутствует учетная запись с введенным логином/паролем");
             sendMessage(authErrorCommand);
             return false;
         } else if (networkServer.isNickBusy(username.getValue())){
             Command authErrorCommand = Command.authErrorCommand("Данный пользователь уже авторизован.");
+            logger.log(Level.INFO,"Попытка авторизации, авторизованного пользователя");
             sendMessage(authErrorCommand);
             return false;
         } else {
             nick = username.getValue();
             String message = nick + " зашел в чат!";
             networkServer.broadcastMessage(Command.messageCommand(null, message), this);
+            logger.log(Level.INFO,message);
             commandData.setUsername(nick);
             commandData.setID(username.getKey());
             sendMessage(command); //авторизация
@@ -204,5 +220,18 @@ public class ClientHandler {
 
     public String getUserName() {
         return nick;
+    }
+    private static void setLogger() {
+        Handler handler = null;
+        try {
+            handler = new FileHandler("clienthandlerlog.log", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        handler.setFormatter(new SimpleFormatter());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+        logger.getHandlers()[0].setLevel(Level.INFO);
+
     }
 }

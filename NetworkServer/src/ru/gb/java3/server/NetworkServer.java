@@ -11,9 +11,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.*;
 
 public class NetworkServer {
-
+    private static final Logger logger = Logger.getLogger(NetworkServer.class.getName());
     private final int port;
     private final List<ClientHandler> clients = new ArrayList<>();
     private final AuthService authService;
@@ -26,21 +27,42 @@ public class NetworkServer {
 
     //запуск
     public void go() {
+        setLogger();
         try (ServerSocket serverSocket = new ServerSocket(port)){
             System.out.println("Сервер был успешно создан. Порт: " + port);
+            logger.log(Level.INFO,"Сервер был успешно создан. Порт: " + port );
             authService.start();
+            logger.log(Level.INFO,"Сервис аутентификации запущен");
             while(true){
                 System.out.println("Ожидание клиентского подключения...");
+                logger.log(Level.INFO,"Ожидание клиентского подключения...");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Клиент подключился...");
+                logger.log(Level.INFO,"Клиент подключился...");
                 createClientHandler(clientSocket);
             }
         } catch (IOException e) {
             System.out.println("Ошибка при работе сервера.");
+            logger.log(Level.SEVERE, "Ошибка при работе сервера.");
             e.printStackTrace();
         } finally {
             authService.stop();
+            logger.log(Level.INFO,"Сервис аутентификации остановлен");
         }
+    }
+
+    private void setLogger() {
+        Handler handler = null;
+        try {
+            handler = new FileHandler("networkclientlog.log", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        handler.setFormatter(new SimpleFormatter());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+        logger.getHandlers()[0].setLevel(Level.INFO);
+
     }
 
     //создание обработчика клиентского подключения

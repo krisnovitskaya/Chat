@@ -12,6 +12,10 @@ import ru.gb.java3.server.NetworkServer;
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ClientHandler {
     private final long TIMEOUT = 120000; // in millis
@@ -23,6 +27,8 @@ public class ClientHandler {
 
 
     private String nick;
+
+
 
     public ClientHandler(NetworkServer networkServer, Socket clientSocket) {
         this.networkServer = networkServer;
@@ -40,33 +46,39 @@ public class ClientHandler {
             in = new ObjectInputStream(clientSocket.getInputStream());
 
             //запуск авторизации с последующим чтением ввода в отдельном потоке
-            new Thread(() -> {
-
-                try {
-                    authentication();
-                    readingMessages();
-                } catch (IOException e) {
-                    System.out.println("Соединение с клиентом " + nick + " завершено.");
-                } finally {
-                    closeConnection();
-                }
-
-            }).start();
-
-            //сюда попробовать new Thread 120 секунд авторизации
-            new Thread(() -> {
-                try {
-                    Thread.currentThread().sleep(TIMEOUT);
-                    if(nick == null){
-                        Command authErrorCommand = Command.authErrorCommand("Превышено время ожидания");
-                        sendMessage(authErrorCommand);
+            ExecutorService executorService = Executors.newFixedThreadPool(2);
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        authentication();
+                        readingMessages();
+                    } catch (IOException e) {
+                        System.out.println("Соединение с клиентом " + nick + " завершено.");
+                    } finally {
                         closeConnection();
-                        System.out.println("Соединение разорвано по таймауту");
                     }
-                } catch (InterruptedException | IOException e) {
-                    e.printStackTrace();
                 }
-            }).start();
+            });
+
+
+            //TIMEOUT
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        executorService.awaitTermination(TIMEOUT, TimeUnit.MILLISECONDS );
+                        if(nick == null){
+                            Command authErrorCommand = Command.authErrorCommand("Превышено время ожидания");
+                            sendMessage(authErrorCommand);
+                            closeConnection();
+                            System.out.println("Соединение разорвано по таймауту");
+                        }
+                    } catch (InterruptedException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -37,3 +37,9 @@ nick22: executor
 Я приватно nick22: executor
 nick3 зашел в чат!
 nick3: uhah
+nick22 зашел в чат!
+Я: dasdsa
+name444 зашел в чат!
+name444: dsada
+name444 сменил ник на nickFOUR
+nickFOUR: dsada
